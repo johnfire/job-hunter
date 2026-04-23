@@ -1,0 +1,23 @@
+# User data (gitignored — stays local)
+data/
+reports/
+output/
+batch/logs/
+batch/tracker-additions/
+batch/batch-state.tsv
+batch/batch-input.tsv
+jds/
+interview-prep/*.md
+!interview-prep/story-bank.md
+portals.yml
+config/profile.yml
+modes/_profile.md
+cv.md
+article-digest.md
+.env
+
+# Deps
+node_modules/
+
+# OS
+.DS_Store
