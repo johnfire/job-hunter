@@ -1,5 +1,6 @@
 # User data (gitignored — stays local)
 data/
+!dashboard/internal/data/
 reports/
 output/
 batch/logs/
