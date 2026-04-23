@@ -175,6 +175,18 @@ const DEFAULT_LOCATION_TERMS = [
   "bayern",
 ];
 
+// Patterns that indicate a location is explicitly US/Canada-only, even if
+// the string also contains "remote". E.g. "Remote - United States" is rejected.
+const REJECT_LOCATION_PATTERNS = [
+  /\busa\b/,
+  /\bunited states\b/,
+  /\bcanada\b/,
+  /\bremote[^a-z]*(us|usa|united states|canada)\b/,
+  /\b(us|usa|united states|canada)[^a-z]*remote\b/,
+  // city, state patterns common in US job boards
+  /,\s*(ca|ny|wa|tx|ma|il|co|ga|va|fl|nc|oh|pa|az|nj|mn|mi|or)\b/,
+];
+
 function buildLocationFilter(locationTerms) {
   const terms = (locationTerms || DEFAULT_LOCATION_TERMS).map((t) =>
     t.toLowerCase(),
@@ -182,6 +194,8 @@ function buildLocationFilter(locationTerms) {
   return (location) => {
     if (!location || location.trim() === "") return true; // unknown = allow
     const lower = location.toLowerCase();
+    // Reject if any hard-exclude pattern matches
+    if (REJECT_LOCATION_PATTERNS.some((re) => re.test(lower))) return false;
     return terms.some((t) => lower.includes(t));
   };
 }
