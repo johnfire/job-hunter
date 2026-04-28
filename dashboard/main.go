@@ -9,10 +9,10 @@ import (
 
 	tea "github.com/charmbracelet/bubbletea"
 
-	"github.com/christopherrehm/job-hunter/dashboard/internal/data"
-	"github.com/christopherrehm/job-hunter/dashboard/internal/model"
-	"github.com/christopherrehm/job-hunter/dashboard/internal/theme"
-	"github.com/christopherrehm/job-hunter/dashboard/internal/ui/screens"
+	"github.com/santifer/career-ops/dashboard/internal/data"
+	"github.com/santifer/career-ops/dashboard/internal/model"
+	"github.com/santifer/career-ops/dashboard/internal/theme"
+	"github.com/santifer/career-ops/dashboard/internal/ui/screens"
 )
 
 type viewState int

@@ -10,7 +10,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/christopherrehm/job-hunter/dashboard/internal/model"
+	"github.com/santifer/career-ops/dashboard/internal/model"
 )
 
 var (
@@ -77,8 +77,12 @@ func ParseApplications(careerOpsPath string) []model.CareerApplication {
 		}
 
 		num++
+		trackerNumber := num
+		if parsedNumber, err := strconv.Atoi(fields[0]); err == nil {
+			trackerNumber = parsedNumber
+		}
 		app := model.CareerApplication{
-			Number:  num,
+			Number:  trackerNumber,
 			Date:    fields[1],
 			Company: fields[2],
 			Role:    fields[3],

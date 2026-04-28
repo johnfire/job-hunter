@@ -2,11 +2,9 @@
 
 ## Origin
 
-This system was adapted from the open-source career-ops project by Santiago Fernández
-(https://github.com/santifer/career-ops). Customized for Christopher Rehm's job search.
+This system was built and used by [santifer](https://santifer.io) to evaluate 740+ job offers, generate 100+ tailored CVs, and land a Head of Applied AI role. The archetypes, scoring logic, negotiation scripts, and proof point structure all reflect his specific career search in AI/automation roles.
 
-The modes, scoring logic, and negotiation scripts have been adapted to Christopher's
-specific career context. See `config/profile.yml` and `modes/_profile.md` for his profile.
+The portfolio that goes with this system is also open source: [cv-santiago](https://github.com/santifer/cv-santiago).
 
 **It will work out of the box, but it's designed to be made yours.** If the archetypes don't match your career, the modes are in the wrong language, or the scoring doesn't fit your priorities -- just ask. You (AI Agent) can edit the user's files. The user says "change the archetypes to data engineering roles" and you do it. That's the whole point.
 
@@ -15,12 +13,10 @@ specific career context. See `config/profile.yml` and `modes/_profile.md` for hi
 There are two layers. Read `DATA_CONTRACT.md` for the full list.
 
 **User Layer (NEVER auto-updated, personalization goes HERE):**
-
 - `cv.md`, `config/profile.yml`, `modes/_profile.md`, `article-digest.md`, `portals.yml`
 - `data/*`, `reports/*`, `output/*`, `interview-prep/*`
 
 **System Layer (auto-updatable, DON'T put user data here):**
-
 - `modes/_shared.md`, `modes/oferta.md`, all other modes
 - `CLAUDE.md`, `*.mjs` scripts, `dashboard/*`, `templates/*`, `batch/*`
 
@@ -35,13 +31,13 @@ node update-system.mjs check
 ```
 
 Parse the JSON output:
-
 - `{"status": "update-available", "local": "1.0.0", "remote": "1.1.0", "changelog": "..."}` → tell the user:
   > "career-ops update available (v{local} → v{remote}). Your data (CV, profile, tracker, reports) will NOT be touched. Want me to update?"
-  > If yes → run `node update-system.mjs apply`. If no → run `node update-system.mjs dismiss`.
+  If yes → run `node update-system.mjs apply`. If no → run `node update-system.mjs dismiss`.
 - `{"status": "up-to-date"}` → say nothing
 - `{"status": "dismissed"}` → say nothing
 - `{"status": "offline"}` → say nothing
+- `{"status": "no-remote-version"}` → say nothing (checker reached GitHub but neither VERSION nor the latest release tag parsed as semver — treat as a silent non-failure, same as offline)
 
 The user can also say "check for updates" or "update career-ops" at any time to force a check.
 To rollback: `node update-system.mjs rollback`
@@ -52,48 +48,73 @@ AI-powered job search automation built on Claude Code: pipeline tracking, offer 
 
 ### Main Files
 
-| File                                 | Function                                                                                                                                            |
-| ------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `data/applications.md`               | Application tracker                                                                                                                                 |
-| `data/pipeline.md`                   | Inbox of pending URLs                                                                                                                               |
-| `data/scan-history.tsv`              | Scanner dedup history                                                                                                                               |
-| `portals.yml`                        | Query and company config                                                                                                                            |
-| `templates/cv-template.html`         | HTML template for CVs                                                                                                                               |
-| `templates/cv-template.tex`          | LaTeX/Overleaf template for CVs                                                                                                                     |
-| `generate-pdf.mjs`                   | Playwright: HTML to PDF                                                                                                                             |
-| `generate-latex.mjs`                 | LaTeX CV validator + pdflatex compiler                                                                                                              |
-| `article-digest.md`                  | Compact proof points from portfolio (optional)                                                                                                      |
-| `interview-prep/story-bank.md`       | Accumulated STAR+R stories across evaluations                                                                                                       |
-| `interview-prep/{company}-{role}.md` | Company-specific interview intel reports                                                                                                            |
-| `analyze-patterns.mjs`               | Pattern analysis script (JSON output)                                                                                                               |
-| `followup-cadence.mjs`               | Follow-up cadence calculator (JSON output)                                                                                                          |
-| `data/follow-ups.md`                 | Follow-up history tracker                                                                                                                           |
-| `scan.mjs`                           | Zero-token portal scanner — hits Greenhouse/Ashby/Lever APIs directly, zero LLM cost                                                                |
-| `check-liveness.mjs`                 | Job posting liveness checker                                                                                                                        |
-| `liveness-core.mjs`                  | Shared liveness logic (expired signals win over generic Apply text)                                                                                 |
-| `reports/`                           | Evaluation reports (format: `{###}-{company-slug}-{YYYY-MM-DD}.md`). Blocks A-F + G (Posting Legitimacy). Header includes `**Legitimacy:** {tier}`. |
+| File | Function |
+|------|----------|
+| `data/applications.md` | Application tracker |
+| `data/pipeline.md` | Inbox of pending URLs |
+| `data/scan-history.tsv` | Scanner dedup history |
+| `portals.yml` | Query and company config |
+| `templates/cv-template.html` | HTML template for CVs |
+| `templates/cv-template.tex` | LaTeX/Overleaf template for CVs |
+| `generate-pdf.mjs` | Playwright: HTML to PDF |
+| `generate-latex.mjs` | LaTeX CV validator + pdflatex compiler |
+| `article-digest.md` | Compact proof points from portfolio (optional) |
+| `interview-prep/story-bank.md` | Accumulated STAR+R stories across evaluations |
+| `interview-prep/{company}-{role}.md` | Company-specific interview intel reports |
+| `analyze-patterns.mjs` | Pattern analysis script (JSON output) |
+| `followup-cadence.mjs` | Follow-up cadence calculator (JSON output) |
+| `data/follow-ups.md` | Follow-up history tracker |
+| `scan.mjs` | Zero-token portal scanner — hits Greenhouse/Ashby/Lever APIs directly, zero LLM cost |
+| `check-liveness.mjs` | Job posting liveness checker |
+| `liveness-core.mjs` | Shared liveness logic (expired signals win over generic Apply text) |
+| `reports/` | Evaluation reports (format: `{###}-{company-slug}-{YYYY-MM-DD}.md`). Blocks A-F + G (Posting Legitimacy). Header includes `**Legitimacy:** {tier}`. |
+
+### OpenCode Commands
+
+When using [OpenCode](https://opencode.ai), the following slash commands are available (defined in `.opencode/commands/`):
+
+| Command | Claude Code Equivalent | Description |
+|---------|------------------------|-------------|
+| `/career-ops` | `/career-ops` | Show menu or evaluate JD with args |
+| `/career-ops-pipeline` | `/career-ops pipeline` | Process pending URLs from inbox |
+| `/career-ops-evaluate` | `/career-ops oferta` | Evaluate job offer (A-F scoring) |
+| `/career-ops-compare` | `/career-ops ofertas` | Compare and rank multiple offers |
+| `/career-ops-contact` | `/career-ops contacto` | LinkedIn outreach (find contacts + draft) |
+| `/career-ops-deep` | `/career-ops deep` | Deep company research |
+| `/career-ops-pdf` | `/career-ops pdf` | Generate ATS-optimized CV |
+| `/career-ops-latex` | `/career-ops latex` | Export CV as LaTeX/Overleaf .tex |
+| `/career-ops-training` | `/career-ops training` | Evaluate course/cert against goals |
+| `/career-ops-project` | `/career-ops project` | Evaluate portfolio project idea |
+| `/career-ops-tracker` | `/career-ops tracker` | Application status overview |
+| `/career-ops-apply` | `/career-ops apply` | Live application assistant |
+| `/career-ops-scan` | `/career-ops scan` | Scan portals for new offers |
+| `/career-ops-batch` | `/career-ops batch` | Batch processing with parallel workers |
+| `/career-ops-patterns` | `/career-ops patterns` | Analyze rejection patterns and improve targeting |
+| `/career-ops-followup` | `/career-ops followup` | Follow-up cadence tracker |
+
+**Note:** OpenCode commands invoke the same `.claude/skills/career-ops/SKILL.md` skill used by Claude Code. The `modes/*` files are shared between both platforms.
 
 ### Gemini CLI Commands
 
 When using the [Gemini CLI](https://github.com/google-gemini/gemini-cli), the following slash commands are available (defined in `.gemini/commands/`):
 
-| Command                | Claude Code Equivalent | Description                                      |
-| ---------------------- | ---------------------- | ------------------------------------------------ |
-| `/career-ops`          | `/career-ops`          | Show menu or evaluate JD with args               |
-| `/career-ops-pipeline` | `/career-ops pipeline` | Process pending URLs from inbox                  |
-| `/career-ops-evaluate` | `/career-ops oferta`   | Evaluate job offer (A-G scoring)                 |
-| `/career-ops-compare`  | `/career-ops ofertas`  | Compare and rank multiple offers                 |
-| `/career-ops-contact`  | `/career-ops contacto` | LinkedIn outreach (find contacts + draft)        |
-| `/career-ops-deep`     | `/career-ops deep`     | Deep company research                            |
-| `/career-ops-pdf`      | `/career-ops pdf`      | Generate ATS-optimized CV                        |
-| `/career-ops-training` | `/career-ops training` | Evaluate course/cert against goals               |
-| `/career-ops-project`  | `/career-ops project`  | Evaluate portfolio project idea                  |
-| `/career-ops-tracker`  | `/career-ops tracker`  | Application status overview                      |
-| `/career-ops-apply`    | `/career-ops apply`    | Live application assistant                       |
-| `/career-ops-scan`     | `/career-ops scan`     | Scan portals for new offers                      |
-| `/career-ops-batch`    | `/career-ops batch`    | Batch processing with parallel workers           |
+| Command | Claude Code Equivalent | Description |
+|---------|------------------------|-------------|
+| `/career-ops` | `/career-ops` | Show menu or evaluate JD with args |
+| `/career-ops-pipeline` | `/career-ops pipeline` | Process pending URLs from inbox |
+| `/career-ops-evaluate` | `/career-ops oferta` | Evaluate job offer (A-G scoring) |
+| `/career-ops-compare` | `/career-ops ofertas` | Compare and rank multiple offers |
+| `/career-ops-contact` | `/career-ops contacto` | LinkedIn outreach (find contacts + draft) |
+| `/career-ops-deep` | `/career-ops deep` | Deep company research |
+| `/career-ops-pdf` | `/career-ops pdf` | Generate ATS-optimized CV |
+| `/career-ops-training` | `/career-ops training` | Evaluate course/cert against goals |
+| `/career-ops-project` | `/career-ops project` | Evaluate portfolio project idea |
+| `/career-ops-tracker` | `/career-ops tracker` | Application status overview |
+| `/career-ops-apply` | `/career-ops apply` | Live application assistant |
+| `/career-ops-scan` | `/career-ops scan` | Scan portals for new offers |
+| `/career-ops-batch` | `/career-ops batch` | Batch processing with parallel workers |
 | `/career-ops-patterns` | `/career-ops patterns` | Analyze rejection patterns and improve targeting |
-| `/career-ops-followup` | `/career-ops followup` | Follow-up cadence tracker                        |
+| `/career-ops-followup` | `/career-ops followup` | Follow-up cadence tracker |
 
 **Note:** Gemini CLI commands are defined in `.gemini/commands/*.toml`. The project context is auto-loaded from `GEMINI.md`. All `modes/*` files are shared across Claude Code, OpenCode, and Gemini CLI.
 
@@ -103,7 +124,7 @@ When using the [Gemini CLI](https://github.com/google-gemini/gemini-cli), the fo
 
 1. Does `cv.md` exist?
 2. Does `config/profile.yml` exist (not just profile.example.yml)?
-3. Does `modes/_profile.md` exist (not just \_profile.template.md)?
+3. Does `modes/_profile.md` exist (not just _profile.template.md)?
 4. Does `portals.yml` exist (not just templates/portals.example.yml)?
 
 If `modes/_profile.md` is missing, copy from `modes/_profile.template.md` silently. This is the user's customization file — it will never be overwritten by updates.
@@ -111,11 +132,8 @@ If `modes/_profile.md` is missing, copy from `modes/_profile.template.md` silent
 **If ANY of these is missing, enter onboarding mode.** Do NOT proceed with evaluations, scans, or any other mode until the basics are in place. Guide the user step by step:
 
 #### Step 1: CV (required)
-
 If `cv.md` is missing, ask:
-
 > "I don't have your CV yet. You can either:
->
 > 1. Paste your CV here and I'll convert it to markdown
 > 2. Paste your LinkedIn URL and I'll extract the key info
 > 3. Tell me about your experience and I'll draft a CV for you
@@ -125,11 +143,8 @@ If `cv.md` is missing, ask:
 Create `cv.md` from whatever they provide. Make it clean markdown with standard sections (Summary, Experience, Projects, Education, Skills).
 
 #### Step 2: Profile (required)
-
 If `config/profile.yml` is missing, copy from `config/profile.example.yml` and then ask:
-
 > "I need a few details to personalize the system:
->
 > - Your full name and email
 > - Your location and timezone
 > - What roles are you targeting? (e.g., 'Senior Backend Engineer', 'AI Product Manager')
@@ -140,22 +155,18 @@ If `config/profile.yml` is missing, copy from `config/profile.example.yml` and t
 Fill in `config/profile.yml` with their answers. For archetypes and targeting narrative, store the user-specific mapping in `modes/_profile.md` or `config/profile.yml` rather than editing `modes/_shared.md`.
 
 #### Step 3: Portals (recommended)
-
 If `portals.yml` is missing:
-
 > "I'll set up the job scanner with 45+ pre-configured companies. Want me to customize the search keywords for your target roles?"
 
 Copy `templates/portals.example.yml` → `portals.yml`. If they gave target roles in Step 2, update `title_filter.positive` to match.
 
 #### Step 4: Tracker
-
 If `data/applications.md` doesn't exist, create it:
-
 ```markdown
 # Applications Tracker
 
-| #   | Date | Company | Role | Score | Status | PDF | Report | Notes |
-| --- | ---- | ------- | ---- | ----- | ------ | --- | ------ | ----- |
+| # | Date | Company | Role | Score | Status | PDF | Report | Notes |
+|---|------|---------|------|-------|--------|-----|--------|-------|
 ```
 
 #### Step 5: Get to know the user (important for quality)
@@ -163,7 +174,6 @@ If `data/applications.md` doesn't exist, create it:
 After the basics are set up, proactively ask for more context. The more you know, the better your evaluations will be:
 
 > "The basics are ready. But the system works much better when it knows you well. Can you tell me more about:
->
 > - What makes you unique? What's your 'superpower' that other candidates don't have?
 > - What kind of work excites you? What drains you?
 > - Any deal-breakers? (e.g., no on-site, no startups under 20 people, no Java shops)
@@ -177,11 +187,8 @@ Store any insights the user shares in `config/profile.yml` (under narrative), `m
 **After every evaluation, learn.** If the user says "this score is too high, I wouldn't apply here" or "you missed that I have experience in X", update your understanding in `modes/_profile.md`, `config/profile.yml`, or `article-digest.md`. The system should get smarter with every interaction without putting personalization into system-layer files.
 
 #### Step 6: Ready
-
 Once all files exist, confirm:
-
 > "You're all set! You can now:
->
 > - Paste a job URL to evaluate it
 > - Run `/career-ops scan` (or `/career-ops-scan` if using OpenCode) to search portals
 > - Run `/career-ops` to see all commands
@@ -191,7 +198,6 @@ Once all files exist, confirm:
 > Tip: Having a personal portfolio dramatically improves your job search. If you don't have one yet, the author's portfolio is also open source: github.com/santifer/cv-santiago — feel free to fork it and make it yours."
 
 Then suggest automation:
-
 > "Want me to scan for new offers automatically? I can set up a recurring scan every few days so you don't miss anything. Just say 'scan every 3 days' and I'll configure it."
 
 If the user accepts, use the `/loop` or `/schedule` skill (if available) to set up a recurring `/career-ops scan` (or `/career-ops-scan` if using OpenCode). If those aren't available, suggest adding a cron job or remind them to run `/career-ops scan` (or `/career-ops-scan` if using OpenCode) periodically.
@@ -201,7 +207,6 @@ If the user accepts, use the `/loop` or `/schedule` skill (if available) to set 
 This system is designed to be customized by YOU (AI Agent). When the user asks you to change archetypes, translate modes, adjust scoring, add companies, or modify negotiation scripts -- do it directly. You read the same files you use, so you know exactly what to edit.
 
 **Common customization requests:**
-
 - "Change the archetypes to [backend/frontend/data/devops] roles" → edit `modes/_profile.md` or `config/profile.yml`
 - "Translate the modes to English" → edit all files in `modes/`
 - "Add these companies to my portals" → edit `portals.yml`
@@ -218,19 +223,16 @@ Default modes are in `modes/` (English). Additional language-specific modes are 
 - **Japanese (Japan market):** `modes/ja/` — native Japanese translations with Japan-specific vocabulary (正社員, 業務委託, 賞与, 退職金, みなし残業, 年俸制, 36協定, 通勤手当, 住宅手当, etc.). Includes `_shared.md`, `kyujin.md` (evaluation), `oubo.md` (apply), `pipeline.md`.
 
 **When to use German modes:** If the user is targeting German-language job postings, lives in DACH, or asks for German output. Either:
-
 1. User says "use German modes" → read from `modes/de/` instead of `modes/`
 2. User sets `language.modes_dir: modes/de` in `config/profile.yml` → always use German modes
 3. You detect a German JD → suggest switching to German modes
 
 **When to use French modes:** If the user is targeting French-language job postings, lives in France/Belgium/Switzerland/Luxembourg/Quebec, or asks for French output. Either:
-
 1. User says "use French modes" → read from `modes/fr/` instead of `modes/`
 2. User sets `language.modes_dir: modes/fr` in `config/profile.yml` → always use French modes
 3. You detect a French JD → suggest switching to French modes
 
 **When to use Japanese modes:** If the user is targeting Japanese-language job postings, lives in Japan, or asks for Japanese output. Either:
-
 1. User says "use Japanese modes" → read from `modes/ja/` instead of `modes/`
 2. User sets `language.modes_dir: modes/ja` in `config/profile.yml` → always use Japanese modes
 3. You detect a Japanese JD → suggest switching to Japanese modes
@@ -239,24 +241,24 @@ Default modes are in `modes/` (English). Additional language-specific modes are 
 
 ### Skill Modes
 
-| If the user...                                              | Mode                                              |
-| ----------------------------------------------------------- | ------------------------------------------------- |
-| Pastes JD or URL                                            | auto-pipeline (evaluate + report + PDF + tracker) |
-| Asks to evaluate offer                                      | `oferta`                                          |
-| Asks to compare offers                                      | `ofertas`                                         |
-| Wants LinkedIn outreach                                     | `contacto`                                        |
-| Asks for company research                                   | `deep`                                            |
-| Preps for interview at specific company                     | `interview-prep`                                  |
-| Wants to generate CV/PDF                                    | `pdf`                                             |
-| Evaluates a course/cert                                     | `training`                                        |
-| Evaluates portfolio project                                 | `project`                                         |
-| Asks about application status                               | `tracker`                                         |
-| Fills out application form                                  | `apply`                                           |
-| Searches for new offers                                     | `scan`                                            |
-| Processes pending URLs                                      | `pipeline`                                        |
-| Batch processes offers                                      | `batch`                                           |
-| Asks about rejection patterns or wants to improve targeting | `patterns`                                        |
-| Asks about follow-ups or application cadence                | `followup`                                        |
+| If the user... | Mode |
+|----------------|------|
+| Pastes JD or URL | auto-pipeline (evaluate + report + PDF + tracker) |
+| Asks to evaluate offer | `oferta` |
+| Asks to compare offers | `ofertas` |
+| Wants LinkedIn outreach | `contacto` |
+| Asks for company research | `deep` |
+| Preps for interview at specific company | `interview-prep` |
+| Wants to generate CV/PDF | `pdf` |
+| Evaluates a course/cert | `training` |
+| Evaluates portfolio project | `project` |
+| Asks about application status | `tracker` |
+| Fills out application form | `apply` |
+| Searches for new offers | `scan` |
+| Processes pending URLs | `pipeline` |
+| Batch processes offers | `batch` |
+| Asks about rejection patterns or wants to improve targeting | `patterns` |
+| Asks about follow-ups or application cadence | `followup` |
 
 ### CV Source of Truth
 
@@ -280,7 +282,6 @@ Default modes are in `modes/` (English). Additional language-specific modes are 
 ## Offer Verification -- MANDATORY
 
 **NEVER trust WebSearch/WebFetch to verify if an offer is still active.** ALWAYS use Playwright:
-
 1. `browser_navigate` to the URL
 2. `browser_snapshot` to read content
 3. Only footer/navbar without JD = closed. Title + description + Apply = active.
@@ -324,7 +325,6 @@ Write one TSV file per evaluation to `batch/tracker-additions/{num}-{company-slu
 ```
 
 **Column order (IMPORTANT -- status BEFORE score):**
-
 1. `num` -- sequential number (integer)
 2. `date` -- YYYY-MM-DD
 3. `company` -- short company name
@@ -351,19 +351,18 @@ Write one TSV file per evaluation to `batch/tracker-additions/{num}-{company-slu
 
 **Source of truth:** `templates/states.yml`
 
-| State       | When to use                            |
-| ----------- | -------------------------------------- |
-| `Evaluated` | Report completed, pending decision     |
-| `Applied`   | Application sent                       |
-| `Responded` | Company responded                      |
-| `Interview` | In interview process                   |
-| `Offer`     | Offer received                         |
-| `Rejected`  | Rejected by company                    |
+| State | When to use |
+|-------|-------------|
+| `Evaluated` | Report completed, pending decision |
+| `Applied` | Application sent |
+| `Responded` | Company responded |
+| `Interview` | In interview process |
+| `Offer` | Offer received |
+| `Rejected` | Rejected by company |
 | `Discarded` | Discarded by candidate or offer closed |
-| `SKIP`      | Doesn't fit, don't apply               |
+| `SKIP` | Doesn't fit, don't apply |
 
 **RULES:**
-
 - No markdown bold (`**`) in status field
 - No dates in status field (use the date column)
 - No extra text (use the notes column)
