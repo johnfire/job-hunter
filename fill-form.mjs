@@ -7,12 +7,8 @@
  *   node fill-form.mjs fill <URL> --answers <path-to-answers.json>
  */
 
-import { createHash } from "crypto";
 import { mkdirSync } from "fs";
-import { dirname } from "path";
-import { fileURLToPath } from "url";
-
-export const ROOT = dirname(fileURLToPath(import.meta.url));
+import { ROOT } from "./lib/utils.mjs";
 
 const [, , subcommand, url, ...rest] = process.argv;
 
@@ -25,10 +21,6 @@ Usage:
 if (!subcommand || !url) {
   console.error(USAGE);
   process.exit(1);
-}
-
-export function urlHash(url) {
-  return createHash("sha1").update(url).digest("hex").slice(0, 8);
 }
 
 mkdirSync(`${ROOT}/output`, { recursive: true });
