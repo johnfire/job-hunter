@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Apply — Greenhouse Test Fixture</title>
+  </head>
+  <body>
+    <form id="application-form">
+      <div class="field">
+        <label for="first_name">First Name *</label>
+        <input type="text" id="first_name" name="first_name" required />
+      </div>
+      <div class="field">
+        <label for="last_name">Last Name *</label>
+        <input type="text" id="last_name" name="last_name" required />
+      </div>
+      <div class="field">
+        <label for="email">Email *</label>
+        <input type="email" id="email" name="email" required />
+      </div>
+      <div class="field">
+        <label for="phone">Phone</label>
+        <input type="tel" id="phone" name="phone" />
+      </div>
+      <div class="field">
+        <label>Resume/CV *</label>
+        <input
+          type="file"
+          data-source="resume"
+          accept=".pdf,.doc,.docx"
+          required
+        />
+      </div>
+      <div class="field">
+        <label for="cover_letter">Cover Letter</label>
+        <textarea
+          id="cover_letter"
+          name="cover_letter"
+          maxlength="5000"
+        ></textarea>
+      </div>
+      <div class="field">
+        <label for="hear_about">How did you hear about us?</label>
+        <select id="hear_about" name="hear_about">
+          <option value="">Select...</option>
+          <option value="linkedin">LinkedIn</option>
+          <option value="referral">Referral</option>
+          <option value="job_board">Job Board</option>
+        </select>
+      </div>
+      <div class="custom-question">
+        <label for="question_why"
+          >Why do you want to work here? (500 chars max)</label
+        >
+        <textarea
+          id="question_why"
+          name="question[1234]"
+          maxlength="500"
+        ></textarea>
+      </div>
+      <button type="submit">Submit Application</button>
+    </form>
+  </body>
+</html>

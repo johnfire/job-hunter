@@ -120,6 +120,99 @@ try {
   fail("import lib/profile-loader.mjs", e);
 }
 
+// ── 3. GREENHOUSE FORM EXTRACTION (PLAYWRIGHT) ────────────────────
+
+console.log("3. Greenhouse form extraction (Playwright)");
+
+try {
+  const { chromium } = await import("playwright");
+  const { extractFields } = await import("./lib/form-extractor.mjs");
+  const { dirname, join } = await import("path");
+  const { fileURLToPath } = await import("url");
+
+  const rootDir = dirname(fileURLToPath(import.meta.url));
+  const fixtureUrl = `file://${join(rootDir, "test/fixtures/greenhouse-form.html")}`;
+
+  const browser = await chromium.launch({ headless: true });
+  const page = await browser.newPage();
+  await page.goto(fixtureUrl);
+
+  // Pass a Greenhouse URL so the platform is detected correctly
+  const result = await extractFields(
+    page,
+    "https://job-boards.greenhouse.io/acme/jobs/1",
+  );
+  await browser.close();
+
+  try {
+    assert.ok(Array.isArray(result.fields));
+    pass("fields is array");
+  } catch (e) {
+    fail("fields array", e);
+  }
+  try {
+    assert.ok(result.fields.length >= 4);
+    pass(`extracted ${result.fields.length} fields`);
+  } catch (e) {
+    fail("field count >= 4", e);
+  }
+  try {
+    assert.equal(result.platform, "greenhouse");
+    pass("platform = greenhouse");
+  } catch (e) {
+    fail("platform", e);
+  }
+
+  const firstName = result.fields.find((f) => f.id === "first_name");
+  try {
+    assert.ok(firstName);
+    pass("found first_name field");
+  } catch (e) {
+    fail("first_name field", e);
+  }
+  try {
+    assert.equal(firstName?.type, "text");
+    pass("first_name type = text");
+  } catch (e) {
+    fail("first_name type", e);
+  }
+  try {
+    assert.equal(firstName?.required, true);
+    pass("first_name required = true");
+  } catch (e) {
+    fail("first_name required", e);
+  }
+
+  const fileField = result.fields.find((f) => f.type === "file");
+  try {
+    assert.ok(fileField);
+    pass("found file upload field");
+  } catch (e) {
+    fail("file field", e);
+  }
+
+  const selectField = result.fields.find((f) => f.type === "select");
+  try {
+    assert.ok(selectField);
+    assert.ok(
+      Array.isArray(selectField.options) && selectField.options.length >= 2,
+    );
+    pass(`select field has ${selectField.options.length} options`);
+  } catch (e) {
+    fail("select field with options", e);
+  }
+
+  const textareas = result.fields.filter((f) => f.type === "textarea");
+  try {
+    assert.ok(textareas.length >= 1);
+    pass(`found ${textareas.length} textarea(s)`);
+  } catch (e) {
+    fail("textarea count", e);
+  }
+} catch (e) {
+  fail("Greenhouse extraction (Playwright)", e);
+}
+
 // ── RESULTS ───────────────────────────────────────────────────────
 
 console.log(`\nResults: ${passed} passed, ${failed} failed\n`);
