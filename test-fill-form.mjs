@@ -269,6 +269,87 @@ for (const [platform, fixture, atsUrl] of [
   }
 }
 
+// ── 5. FIELD FILLER (PLAYWRIGHT) ──────────────────────────────────
+
+console.log("5. Field filler (Playwright)");
+
+try {
+  const { chromium: cr3 } = await import("playwright");
+  const { fillFields } = await import("./lib/field-filler.mjs");
+  const { dirname: dn3, join: jn3 } = await import("path");
+  const { fileURLToPath: ftu3 } = await import("url");
+  const rootDir3 = dn3(ftu3(import.meta.url));
+
+  const fixtureUrl = `file://${jn3(rootDir3, "test/fixtures/greenhouse-form.html")}`;
+  const browser = await cr3.launch({ headless: true });
+  const page = await browser.newPage();
+  await page.goto(fixtureUrl);
+
+  const answers = [
+    {
+      id: "first_name",
+      selector: "#first_name",
+      type: "text",
+      value: "Christopher",
+    },
+    { id: "last_name", selector: "#last_name", type: "text", value: "Rehm" },
+    { id: "email", selector: "#email", type: "email", value: "test@test.com" },
+    {
+      id: "cover_letter",
+      selector: "#cover_letter",
+      type: "textarea",
+      value: "Hello world",
+    },
+    {
+      id: "hear_about",
+      selector: "#hear_about",
+      type: "select",
+      value: "linkedin",
+    },
+  ];
+
+  const result = await fillFields(page, answers);
+
+  const firstNameVal = await page.$eval("#first_name", (el) => el.value);
+  const coverLetterVal = await page.$eval("#cover_letter", (el) => el.value);
+  const selectVal = await page.$eval("#hear_about", (el) => el.value);
+
+  await browser.close();
+
+  try {
+    assert.equal(firstNameVal, "Christopher");
+    pass("text field filled correctly");
+  } catch (e) {
+    fail("text field value", e);
+  }
+  try {
+    assert.equal(coverLetterVal, "Hello world");
+    pass("textarea filled correctly");
+  } catch (e) {
+    fail("textarea value", e);
+  }
+  try {
+    assert.equal(selectVal, "linkedin");
+    pass("select field set correctly");
+  } catch (e) {
+    fail("select value", e);
+  }
+  try {
+    assert.ok(result.filled >= 4);
+    pass(`filled ${result.filled} fields`);
+  } catch (e) {
+    fail("filled count", e);
+  }
+  try {
+    assert.equal(result.errors.length, 0);
+    pass("zero fill errors");
+  } catch (e) {
+    fail("fill errors", e);
+  }
+} catch (e) {
+  fail("field filler (Playwright)", e);
+}
+
 // ── RESULTS ───────────────────────────────────────────────────────
 
 console.log(`\nResults: ${passed} passed, ${failed} failed\n`);
