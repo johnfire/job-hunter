@@ -213,6 +213,62 @@ try {
   fail("Greenhouse extraction (Playwright)", e);
 }
 
+// ── 4. ASHBY + LEVER EXTRACTION (PLAYWRIGHT) ─────────────────────
+
+console.log("4. Ashby + Lever extraction (Playwright)");
+
+const { chromium: cr2 } = await import("playwright");
+const { extractFields: ef2 } = await import("./lib/form-extractor.mjs");
+const { dirname: dn2, join: jn2 } = await import("path");
+const { fileURLToPath: ftu2 } = await import("url");
+const rootDir2 = dn2(ftu2(import.meta.url));
+
+for (const [platform, fixture, atsUrl] of [
+  ["ashby", "ashby-form.html", "https://jobs.ashbyhq.com/acme/123"],
+  ["lever", "lever-form.html", "https://jobs.lever.co/acme/123"],
+]) {
+  try {
+    const fixtureUrl = `file://${jn2(rootDir2, "test/fixtures", fixture)}`;
+    const browser = await cr2.launch({ headless: true });
+    const page = await browser.newPage();
+    await page.goto(fixtureUrl);
+    const result = await ef2(page, atsUrl);
+    await browser.close();
+
+    try {
+      assert.equal(result.platform, platform);
+      pass(`${platform}: platform detected`);
+    } catch (e) {
+      fail(`${platform}: platform`, e);
+    }
+
+    try {
+      assert.ok(result.fields.length >= 4);
+      pass(`${platform}: extracted ${result.fields.length} fields`);
+    } catch (e) {
+      fail(`${platform}: field count >= 4`, e);
+    }
+
+    const fileField = result.fields.find((f) => f.type === "file");
+    try {
+      assert.ok(fileField);
+      pass(`${platform}: found file upload`);
+    } catch (e) {
+      fail(`${platform}: file field`, e);
+    }
+
+    const textarea = result.fields.find((f) => f.type === "textarea");
+    try {
+      assert.ok(textarea);
+      pass(`${platform}: found textarea`);
+    } catch (e) {
+      fail(`${platform}: textarea`, e);
+    }
+  } catch (e) {
+    fail(`${platform} extraction`, e);
+  }
+}
+
 // ── RESULTS ───────────────────────────────────────────────────────
 
 console.log(`\nResults: ${passed} passed, ${failed} failed\n`);

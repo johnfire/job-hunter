@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Apply — Lever Test Fixture</title>
+  </head>
+  <body>
+    <form class="application-form">
+      <div class="application-field">
+        <label for="lever_name">Full Name *</label>
+        <input type="text" id="lever_name" name="name" required />
+      </div>
+      <div class="application-field">
+        <label for="lever_email">Email *</label>
+        <input type="email" id="lever_email" name="email" required />
+      </div>
+      <div class="application-field">
+        <label for="lever_phone">Phone</label>
+        <input type="tel" id="lever_phone" name="phone" />
+      </div>
+      <div class="application-field">
+        <label>Resume *</label>
+        <input type="file" name="resume" required />
+      </div>
+      <div class="application-field">
+        <label for="lever_org">Current Company</label>
+        <input type="text" id="lever_org" name="org" />
+      </div>
+      <div class="application-field">
+        <label for="lever_q1">Why this role?</label>
+        <textarea id="lever_q1" name="question[1]" maxlength="2000"></textarea>
+      </div>
+      <button type="submit">Submit Application</button>
+    </form>
+  </body>
+</html>

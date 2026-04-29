@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Apply — Ashby Test Fixture</title>
+  </head>
+  <body>
+    <form>
+      <div data-testid="question-name">
+        <label for="ashby_name">Full Name *</label>
+        <input type="text" id="ashby_name" required />
+      </div>
+      <div data-testid="question-email">
+        <label for="ashby_email">Email *</label>
+        <input type="email" id="ashby_email" required />
+      </div>
+      <div data-testid="question-phone">
+        <label for="ashby_phone">Phone</label>
+        <input type="tel" id="ashby_phone" />
+      </div>
+      <div data-testid="question-resume">
+        <label>Resume *</label>
+        <input type="file" accept=".pdf" required />
+      </div>
+      <div data-testid="question-linkedin">
+        <label for="ashby_linkedin">LinkedIn Profile</label>
+        <input type="url" id="ashby_linkedin" />
+      </div>
+      <div data-testid="question-location">
+        <label for="ashby_location">Location</label>
+        <select id="ashby_location">
+          <option value="">Select...</option>
+          <option value="remote">Remote</option>
+          <option value="berlin">Berlin</option>
+          <option value="munich">Munich</option>
+        </select>
+      </div>
+      <div data-testid="question-custom">
+        <label for="ashby_q1">What motivates you?</label>
+        <textarea id="ashby_q1" maxlength="1000"></textarea>
+      </div>
+      <button type="submit">Submit</button>
+    </form>
+  </body>
+</html>
