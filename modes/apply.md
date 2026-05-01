@@ -25,7 +25,6 @@ Interactive mode for when the candidate is filling out an application form in Ch
 **With Playwright:** Take a snapshot of the active page. Read title, URL, and visible content.
 
 **Without Playwright:** Ask the candidate to:
-
 - Share a screenshot of the form (Read tool can read images)
 - Or paste the form questions as text
 - Or say company + role so we can search for it
@@ -41,7 +40,6 @@ Interactive mode for when the candidate is filling out an application form in Ch
 ## Step 3 — Detect changes in the role
 
 If the role on screen differs from the one evaluated:
-
 - **Notify the candidate**: "The role has changed from [X] to [Y]. Do you want me to re-evaluate or adapt the responses to the new title?"
 - **If adapt**: Adjust responses to the new role without re-evaluating
 - **If re-evaluate**: Execute full A-F evaluation, update report, regenerate Section G
@@ -50,7 +48,6 @@ If the role on screen differs from the one evaluated:
 ## Step 4 — Analyze form questions
 
 Identify ALL visible questions:
-
 - Free text fields (cover letter, why this role, etc.)
 - Dropdowns (how did you hear, work authorization, etc.)
 - Yes/No (relocation, visa, etc.)
@@ -58,7 +55,6 @@ Identify ALL visible questions:
 - Upload fields (resume, cover letter PDF)
 
 Classify each question:
-
 - **Already answered in Section G** → adapt the existing response
 - **New question** → generate response from the report + cv.md
 
@@ -99,7 +95,6 @@ Notes:
 ## Step 6 — Post-apply (optional)
 
 If the candidate confirms that they submitted the application:
-
 1. Update status in `applications.md` from "Evaluated" to "Applied"
 2. Update Section G of the report with the final responses
 3. Suggest next step: `/career-ops contacto` for LinkedIn outreach
@@ -107,81 +102,6 @@ If the candidate confirms that they submitted the application:
 ## Scroll handling
 
 If the form has more questions than the visible ones:
-
 - Ask the candidate to scroll and share another screenshot
 - Or paste the remaining questions
 - Process in iterations until the entire form is covered
-
-## Auto-fill mode (faster workflow)
-
-When the candidate says "auto-fill", "fill the form for me", or "use Playwright":
-
-### Step A — Extract fields (headless, ~5s)
-
-```bash
-node fill-form.mjs extract <URL>
-```
-
-Saves `output/form-fields-<hash>.json` + screenshot. Read both and report:
-
-- Platform detected (greenhouse / ashby / lever / generic)
-- Number of fields found
-- Any issues (login wall, CAPTCHA, empty page)
-
-### Step B — Generate answers JSON
-
-Read `output/form-fields-<hash>.json` + `cv.md` + `config/profile.yml` + the matching report in `reports/`.
-
-For each field, generate the answer using the same rules as Step 5 above (proof points, STAR stories, specificity). Auto-fill structured fields directly from `config/profile.yml`:
-
-| Field label contains      | Value from profile                 |
-| ------------------------- | ---------------------------------- |
-| first name                | `candidate.full_name` (first word) |
-| last name                 | `candidate.full_name` (remaining)  |
-| email                     | `candidate.email`                  |
-| phone                     | `candidate.phone`                  |
-| linkedin                  | `candidate.linkedin_url`           |
-| location / city           | `candidate.location`               |
-| salary / compensation     | `compensation.target_range`        |
-| work authorization / visa | `candidate.visa_status`            |
-
-For `file` type fields (resume): set `value` to the most recent PDF in `output/` matching the company name, or generate one first with `/career-ops pdf`.
-
-Write the result to `output/form-answers-<hash>.json`:
-
-```json
-{
-  "url": "<same URL>",
-  "platform": "<detected platform>",
-  "answers": [
-    {
-      "id": "<field id>",
-      "selector": "<CSS selector>",
-      "type": "<type>",
-      "value": "<answer>"
-    }
-  ]
-}
-```
-
-Show the answers to the candidate for review before filling.
-
-### Step C — Fill the form (headful, browser stays open)
-
-```bash
-node fill-form.mjs fill <URL> --answers output/form-answers-<hash>.json
-```
-
-Opens a visible browser, fills all fields, saves a screenshot to `output/form-filled-<hash>.png`. The browser stays open — the candidate reviews, makes any manual tweaks, then submits.
-
-**Never click Submit automatically.** The candidate always submits manually.
-
-### Modification flow
-
-If the candidate wants to change a field: update `output/form-answers-<hash>.json`, then rerun Step C. The browser relaunches and re-fills with the updated answers.
-
-### Known limitations (V1)
-
-- Multi-page Workday / SAP SuccessFactors forms: use manual mode (Steps 1–5 above)
-- Login-gated forms: log in first in a regular browser, then run `fill`
-- CAPTCHA: browser stays open, candidate completes it manually then continues
