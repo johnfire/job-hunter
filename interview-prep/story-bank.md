@@ -1,5 +1,11 @@
-# Interview Story Bank
+# STAR Story Bank — Christopher Rehm
 
-STAR+R stories accumulated across evaluations. 5-10 master stories adaptable to any question.
+<!-- Stories are accumulated here across evaluations for reuse in interviews. -->
 
-<!-- Stories are added automatically during evaluations -->
+| # | Theme | Situation | Task | Action | Result | Reflection | Best for |
+|---|-------|-----------|------|--------|--------|------------|---------|
+| 1 | CI/CD from scratch | Fintiba FinTech had 2-hour deployment cycles with no automation | Implement full GitLab CI/CD pipeline | Designed and implemented complete GitLab CI/CD pipeline with automated testing gates | Deployment time cut from 2h to 15min (87.5% reduction); 85%+ test coverage on critical payment modules | Would have involved DevOps stakeholders earlier to align on test coverage requirements | Engineering Manager, Senior Dev, DevOps |
+| 2 | Mentoring & onboarding | Henova hired 5 apprentices with no structured onboarding | Integrate all 5 into the production development team | Defined onboarding path: Git workflows, Vue.js, code review culture, pair programming | All 5 apprentices successfully integrated into production team | Would establish formal milestone checkpoints from day 1 | Engineering Manager, Leadership |
+| 3 | Rapid tech adoption | Tarent required Kotlin backend — zero prior experience | Reach production-ready Kotlin within acceptable timeframe | 2 Udemy courses + deliberate practice + immediate production implementation | Production-ready in 6 weeks | Build something real immediately; tutorials alone don't produce production readiness | Adaptability, Senior Dev |
+| 4 | Product transformation | Protodo was a basic PM tool — management wanted a full collaboration suite | Lead 5-person team to deliver chat, video conferencing, KPI dashboards | Sprints, Agile/Scrum, BuddyCI CI/CD, coached team on Cypress E2E | Full collaboration platform with Jitsi, KPI dashboards, external APIs delivered | Would have defined MVP more ruthlessly to prevent scope creep | Engineering Manager, Product-facing |
+| 5 | Leadership under pressure | Panama — Airborne Forward Observer, 50-man infantry platoon, live fire mission | Coordinate fire support with zero margin for error | Applied SMEAC planning, coordinated with artillery battery, managed real-time adjustments | Successful fire mission with zero friendly casualties | The team's baseline follows the leader's emotional state under pressure | Leadership, culture-fit |
