@@ -1,0 +1,70 @@
+candidate:
+  full_name: "Christopher Rehm"
+  email: "car2187bus@pm.me"
+  phone: "+49 176 82 060 154"
+  location: "Klosterlechfeld, Bayern, Germany"
+  linkedin: "linkedin.com/in/christopher-r-3883921"
+  github: "github.com/johnfire"
+  work_authorization: "Unlimited (Germany)"
+
+target_roles:
+  primary:
+    - "Senior Full-Stack Developer"
+    - "AI Engineer"
+    - "Engineering Manager"
+  secondary:
+    - "Software Architect"
+    - "Technical Lead"
+    - "AI Solutions Architect"
+  archetypes:
+    - name: "Senior Full-Stack Developer (AI-augmented)"
+      level: "Senior/Lead"
+      fit: "primary"
+    - name: "AI Engineer / LLM Engineer"
+      level: "Senior"
+      fit: "primary"
+    - name: "Engineering Manager"
+      level: "Manager"
+      fit: "primary"
+    - name: "Software Architect"
+      level: "Staff/Principal"
+      fit: "secondary"
+    - name: "Technical Lead"
+      level: "Lead"
+      fit: "secondary"
+
+narrative:
+  headline: "Senior Full-Stack Developer & AI-Augmented Software Architect"
+  exit_story: "Built and led the Protodo platform from PM tool to full collaboration suite over 4+ years at Toolmaker (multiple stints), most recently as Senior Developer. The company hit sudden financial difficulties in July 2025 — now actively looking for a senior role where AI-augmented development, architectural leadership, and full-stack delivery intersect."
+  superpowers:
+    - "AI-augmented development: multi-model pipelines, prompt-as-spec, LLM-based testing and security review"
+    - "Full-stack ownership from architecture to deployment (React, Vue, Node, NestJS, Python, Docker, CI/CD)"
+    - "Fast self-teaching: production-ready Kotlin in 6 weeks, complete JS stack in 3 months"
+    - "Engineering leadership: led 5-person team, introduced CI/CD, code review processes, documentation standards"
+    - "Hardware-to-software background (Intel, Space Photonics, embedded systems) — systems-level thinker"
+  proof_points:
+    - name: "Fintiba CI/CD pipeline"
+      hero_metric: "Deployment time 2h → 15 min; 85%+ test coverage on payment modules; 12% conversion improvement"
+    - name: "Protodo platform transformation"
+      hero_metric: "Led 5-person team to transform PM tool into full collaboration platform (chat, video, KPI dashboard)"
+    - name: "Henova patient management"
+      hero_metric: "10,000+ patient records; real-time vital capture system with live validation"
+    - name: "Raspberry Pi ML cluster"
+      hero_metric: "Personal R&D: cluster computing for ML experiments (Python, C++, I²C)"
+
+compensation:
+  target_range: "€70,000 – €95,000"
+  currency: "EUR"
+  minimum: "€65,000"
+  location_flexibility: "Remote preferred; open to hybrid (Bavaria/Germany); willing to consider on-site in Munich area"
+
+location:
+  country: "Germany"
+  city: "Klosterlechfeld, Bavaria"
+  timezone: "CET/CEST"
+  visa_status: "No sponsorship needed — unlimited German work authorization"
+  onsite_availability: "Open to hybrid or full on-site in Bavaria/Munich area"
+
+language:
+  modes_dir: "modes"
+  preferred_output: "English"
