@@ -252,6 +252,9 @@ async function parallelFetch(tasks, limit) {
 async function main() {
   const args = process.argv.slice(2);
   const dryRun = args.includes('--dry-run');
+  const dumpUrls = args.includes('--dump-urls');
+  const fromJsonIdx = args.indexOf('--from-json');
+  const fromJsonPath = fromJsonIdx !== -1 ? args[fromJsonIdx + 1] : null;
   const companyFlag = args.indexOf('--company');
   const filterCompany = companyFlag !== -1 ? args[companyFlag + 1]?.toLowerCase() : null;
 
@@ -264,6 +267,17 @@ async function main() {
   const config = parseYaml(readFileSync(PORTALS_PATH, 'utf-8'));
   const companies = config.tracked_companies || [];
   const titleFilter = buildTitleFilter(config.title_filter);
+
+  // --dump-urls: output JSON array of {name, type, url} for each detectable API target
+  if (dumpUrls) {
+    const targets = companies
+      .filter(c => c.enabled !== false)
+      .filter(c => !filterCompany || c.name.toLowerCase().includes(filterCompany))
+      .map(c => ({ name: c.name, ...detectApi(c) }))
+      .filter(c => c.url);
+    console.log(JSON.stringify(targets, null, 2));
+    return;
+  }
 
   // 2. Filter to enabled companies with detectable APIs
   const targets = companies
@@ -281,7 +295,7 @@ async function main() {
   const seenUrls = loadSeenUrls();
   const seenCompanyRoles = loadSeenCompanyRoles();
 
-  // 4. Fetch all APIs
+  // 4. Fetch all APIs (or load from pre-fetched JSON if --from-json)
   const date = new Date().toISOString().slice(0, 10);
   let totalFound = 0;
   let totalFiltered = 0;
@@ -289,38 +303,73 @@ async function main() {
   const newOffers = [];
   const errors = [];
 
-  const tasks = targets.map(company => async () => {
-    const { type, url } = company._api;
-    try {
-      const json = await fetchJson(url);
-      const jobs = PARSERS[type](json, company.name);
-      totalFound += jobs.length;
-
-      for (const job of jobs) {
-        if (!titleFilter(job.title)) {
-          totalFiltered++;
-          continue;
-        }
-        if (seenUrls.has(job.url)) {
-          totalDupes++;
-          continue;
-        }
-        const key = `${job.company.toLowerCase()}::${job.title.toLowerCase()}`;
-        if (seenCompanyRoles.has(key)) {
-          totalDupes++;
-          continue;
-        }
-        // Mark as seen to avoid intra-scan dupes
-        seenUrls.add(job.url);
-        seenCompanyRoles.add(key);
-        newOffers.push({ ...job, source: `${type}-api` });
-      }
-    } catch (err) {
-      errors.push({ company: company.name, error: err.message });
+  if (fromJsonPath) {
+    // --from-json mode: consume pre-fetched responses written by an external agent
+    if (!existsSync(fromJsonPath)) {
+      console.error(`Error: --from-json file not found: ${fromJsonPath}`);
+      process.exit(1);
     }
-  });
+    const responses = JSON.parse(readFileSync(fromJsonPath, 'utf-8'));
+    for (const resp of responses) {
+      if (resp.error) {
+        errors.push({ company: resp.name, error: resp.error });
+        continue;
+      }
+      const type = resp.type;
+      if (!PARSERS[type]) {
+        errors.push({ company: resp.name, error: `Unknown type: ${type}` });
+        continue;
+      }
+      try {
+        const jobs = PARSERS[type](resp.data, resp.name);
+        totalFound += jobs.length;
+        for (const job of jobs) {
+          if (!titleFilter(job.title)) { totalFiltered++; continue; }
+          if (seenUrls.has(job.url)) { totalDupes++; continue; }
+          const key = `${job.company.toLowerCase()}::${job.title.toLowerCase()}`;
+          if (seenCompanyRoles.has(key)) { totalDupes++; continue; }
+          seenUrls.add(job.url);
+          seenCompanyRoles.add(key);
+          newOffers.push({ ...job, source: `${type}-api` });
+        }
+      } catch (err) {
+        errors.push({ company: resp.name, error: err.message });
+      }
+    }
+  } else {
+    const tasks = targets.map(company => async () => {
+      const { type, url } = company._api;
+      try {
+        const json = await fetchJson(url);
+        const jobs = PARSERS[type](json, company.name);
+        totalFound += jobs.length;
 
-  await parallelFetch(tasks, CONCURRENCY);
+        for (const job of jobs) {
+          if (!titleFilter(job.title)) {
+            totalFiltered++;
+            continue;
+          }
+          if (seenUrls.has(job.url)) {
+            totalDupes++;
+            continue;
+          }
+          const key = `${job.company.toLowerCase()}::${job.title.toLowerCase()}`;
+          if (seenCompanyRoles.has(key)) {
+            totalDupes++;
+            continue;
+          }
+          // Mark as seen to avoid intra-scan dupes
+          seenUrls.add(job.url);
+          seenCompanyRoles.add(key);
+          newOffers.push({ ...job, source: `${type}-api` });
+        }
+      } catch (err) {
+        errors.push({ company: company.name, error: err.message });
+      }
+    });
+
+    await parallelFetch(tasks, CONCURRENCY);
+  }
 
   // 5. Write results
   if (!dryRun && newOffers.length > 0) {
